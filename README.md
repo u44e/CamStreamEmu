@@ -49,4 +49,26 @@ Dev-host overrides: `CAMEMU_SRC` (default libcamerasrc / videotestsrc),
 Pi の HW エンコーダは H.264 のみ。MPEG-2 は SW(gst-libav)フォールバック。
 プロファイルは SPS/PPS(base64)・SDP・AUD/SEI まで持つ(byte-exact 再現用)。
 
+## UI (CardputerZero LVGL)
+
+`./build-emu.sh --run`(Mac の cardputer-emu)。プロファイル一覧 → Enter で再現、
+再現画面に配信モード / 宛先 / パケット・バイト数 / 経過をライブ表示、s/ESC で停止。
+実機では `.deb` の LVGL dlopen アプリとして動く(GStreamer 再現はバックグラウンド)。
+
+## 検証 (実機不要)
+
+`bash tests/verify.sh` — 各サンプルを再現配信 → 受信・デコードし、**デコード解像度が
+プロファイルと一致**することを確認(TTS は PT103/6×192/0x47@+4 の構造)。全モード緑:
+
+```
+PASS 01-mlit-h264-tts  PT103 240 units, 0x47@+4 all
+PASS 02-mpeg2-ts       704x480      PASS 03-h264-rtp-es   1920x1080
+PASS 06-mpeg2-es       704x480      PASS 07-rtsp-h264     1920x1080
+PASS 08-http-mjpeg     30 JPEG frames
+verify: ALL PASS
+```
+
+未検証: 実機(Pi CM0)の libcamera + v4l2 HW エンコード経路(11月着後)、取り込み
+SPS/PPS の byte-exact 注入(現状は再エンコード)。
+
 MIT.
