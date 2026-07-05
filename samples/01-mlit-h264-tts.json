@@ -1,0 +1,40 @@
+{
+  "camera_profile": {
+    "version": 1,
+    "generated_by": "PacketScope 0.1.0",
+    "source_capture": "mlit_ok.pcap",
+    "control": {
+      "protocol": "",
+      "media_port": -1,
+      "server_port": -1
+    },
+    "video": {
+      "transport": "rtp",
+      "payload_type": 103,
+      "ssrc": "0xb7d57799",
+      "clock_hz": 90000,
+      "container": "mpeg2-tts",
+      "tts_unit": 192,
+      "video_pid": 256,
+      "codec": {
+        "name": "H.264",
+        "profile": "High",
+        "level": "4.0",
+        "width": 1920,
+        "height": 1080,
+        "fps": 29.970,
+        "gop": 15,
+        "aud": true,
+        "sei": true,
+        "inband_sps": true,
+        "sps": "Z2QAKKy2A8ARPy4CIAAAfSAAHUwcTAAFuNgAC3G8kFAPGDLg",
+        "pps": "aOrMsiw="
+      },
+      "bitrate_kbps": 9654,
+      "cctv_profile_conformant": true,
+      "src_ip": "192.168.1.100",
+      "dst_ip": "239.1.1.1",
+      "dst_port": 5004
+    }
+  }
+}

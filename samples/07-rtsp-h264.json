@@ -1,0 +1,29 @@
+{
+  "camera_profile": {
+    "version": 1,
+    "generated_by": "hand-crafted example",
+    "source_capture": "(example: an RTSP H.264 IP camera)",
+    "control": {
+      "protocol": "rtsp",
+      "url": "rtsp://192.168.0.50/stream1",
+      "methods": "OPTIONS,DESCRIBE,SETUP,PLAY",
+      "transport": "RTP/AVP;unicast;client_port=6000-6001",
+      "server_port": 554
+    },
+    "video": {
+      "transport": "rtp",
+      "payload_type": 96,
+      "ssrc": "0x11223344",
+      "clock_hz": 90000,
+      "container": "mpeg2-es",
+      "video_pid": -1,
+      "codec": {
+        "name": "H.264", "profile": "High", "level": "4.0",
+        "width": 1920, "height": 1080, "fps": 30.000, "gop": 30,
+        "aud": true, "sei": true, "inband_sps": true
+      },
+      "bitrate_kbps": 4000,
+      "src_ip": "192.168.0.50", "dst_ip": "192.168.0.10", "dst_port": 6000
+    }
+  }
+}

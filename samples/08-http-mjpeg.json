@@ -1,0 +1,24 @@
+{
+  "camera_profile": {
+    "version": 1,
+    "generated_by": "hand-crafted example",
+    "source_capture": "(example: an HTTP Motion-JPEG IP camera)",
+    "control": {
+      "protocol": "http-mjpeg",
+      "url": "http://192.168.0.60/mjpg/video.mjpg",
+      "methods": "GET",
+      "server_port": 80
+    },
+    "video": {
+      "transport": "http",
+      "payload_type": -1,
+      "ssrc": "0x00000000",
+      "clock_hz": 90000,
+      "container": "http-mjpeg",
+      "video_pid": -1,
+      "codec": { "name": "JPEG", "width": 1280, "height": 720, "fps": 15.000, "gop": 0 },
+      "bitrate_kbps": 6000,
+      "src_ip": "192.168.0.60", "dst_ip": "192.168.0.10", "dst_port": 80
+    }
+  }
+}

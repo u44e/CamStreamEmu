@@ -1,0 +1,31 @@
+{
+  "camera_profile": {
+    "version": 1,
+    "generated_by": "PacketScope 0.1.0",
+    "source_capture": "mpeg2_es.pcap",
+    "control": {
+      "protocol": "",
+      "media_port": -1,
+      "server_port": -1
+    },
+    "video": {
+      "transport": "rtp",
+      "payload_type": 96,
+      "ssrc": "0xe5e5e5e5",
+      "clock_hz": 90000,
+      "container": "mpeg2-es",
+      "video_pid": -1,
+      "codec": {
+        "name": "MPEG-2",
+        "width": 704,
+        "height": 480,
+        "fps": 29.970,
+        "gop": 9
+      },
+      "bitrate_kbps": 355,
+      "src_ip": "192.168.6.30",
+      "dst_ip": "239.1.1.6",
+      "dst_port": 5014
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "camera_profile": {
+    "version": 1,
+    "generated_by": "PacketScope 0.1.0",
+    "source_capture": "rtsp.pcap",
+    "control": {
+      "protocol": "rtsp",
+      "url": "rtsp://192.168.10.9/stream1",
+      "methods": "DESCRIBE,SDP,SETUP,PLAY",
+      "transport": "RTP/AVP;multicast;destination=239.1.1.1;port=5004-5005",
+      "multicast_group": "239.1.1.1",
+      "media_port": 5004,
+      "server_port": 554,
+      "sdp": "v=0\no=- 0 0 IN IP4 192.168.10.9\ns=cam\nc=IN IP4 239.1.1.1\nm=video 5004 RTP/AVP 103\na=rtpmap:103 MP2T/90000\n"
+    },
+    "video": {
+      "transport": "rtp",
+      "payload_type": 103,
+      "ssrc": "0x1bf1d58a",
+      "clock_hz": 90000,
+      "container": "mpeg2-tts",
+      "tts_unit": 192,
+      "video_pid": 256,
+      "codec": {
+        "name": "MP2T",
+        "width": 0,
+        "height": 0,
+        "fps": 0.000,
+        "gop": 0
+      },
+      "bitrate_kbps": 0,
+      "cctv_profile_conformant": false,
+      "src_ip": "192.168.10.9",
+      "dst_ip": "192.168.10.5",
+      "dst_port": 40002
+    }
+  }
+}

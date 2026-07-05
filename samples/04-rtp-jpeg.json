@@ -1,0 +1,31 @@
+{
+  "camera_profile": {
+    "version": 1,
+    "generated_by": "PacketScope 0.1.0",
+    "source_capture": "rtp_jpeg.pcap",
+    "control": {
+      "protocol": "",
+      "media_port": -1,
+      "server_port": -1
+    },
+    "video": {
+      "transport": "rtp",
+      "payload_type": 26,
+      "ssrc": "0xcafe0001",
+      "clock_hz": 90000,
+      "container": "rtp-jpeg",
+      "video_pid": -1,
+      "codec": {
+        "name": "JPEG",
+        "width": 0,
+        "height": 0,
+        "fps": 0.000,
+        "gop": 0
+      },
+      "bitrate_kbps": 8608,
+      "src_ip": "192.168.10.5",
+      "dst_ip": "239.1.1.2",
+      "dst_port": 5006
+    }
+  }
+}
