@@ -8,6 +8,7 @@
  * streamkit's sk_tts_to_ts is the reverse (parse) direction; the forward wrap
  * and the RTP payloading loop don't exist there, so they live here. */
 #include "profile.h"
+#include "repro.h"
 #include <gst/gst.h>
 #include <gst/app/gstappsink.h>
 #include <stdio.h>
@@ -45,6 +46,8 @@ static void rtp_send(tts_ctx *c)
     int plen = c->npend * TTS_UNIT;
     memcpy(pkt + 12, c->pending, plen);
     sendto(c->sock, pkt, 12 + plen, 0, (struct sockaddr *)&c->dst, sizeof c->dst);
+    atomic_fetch_add_explicit(&g_repro_bytes, 12 + plen, memory_order_relaxed);
+    atomic_fetch_add_explicit(&g_repro_packets, 1, memory_order_relaxed);
     c->seq++;
     c->rtp_ts += 3003;                               /* 90kHz / 29.97 */
     c->npend = 0;
@@ -111,9 +114,11 @@ int tts_run(const cam_profile_t *p, const char *ts_prefix)
             c.pt, c.ssrc, p->dst_ip, p->dst_port);
 
     GstBus *bus = gst_element_get_bus(pl);
-    GstMessage *msg = gst_bus_timed_pop_filtered(bus, GST_CLOCK_TIME_NONE,
-                                                 GST_MESSAGE_ERROR | GST_MESSAGE_EOS);
-    if (msg) gst_message_unref(msg);
+    while (!atomic_load_explicit(&g_repro_stop, memory_order_acquire)) {
+        GstMessage *msg = gst_bus_timed_pop_filtered(bus, 200 * GST_MSECOND,
+                                                     GST_MESSAGE_ERROR | GST_MESSAGE_EOS);
+        if (msg) { gst_message_unref(msg); break; }
+    }
     gst_object_unref(bus);
     gst_element_set_state(pl, GST_STATE_NULL);
     gst_object_unref(sink);

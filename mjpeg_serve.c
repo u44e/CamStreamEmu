@@ -3,6 +3,7 @@
 #define _DEFAULT_SOURCE
 #define _GNU_SOURCE
 #include "mjpeg_serve.h"
+#include "repro.h"
 #include <gst/gst.h>
 #include <gst/app/gstappsink.h>
 #include <stdio.h>
@@ -66,6 +67,8 @@ static GstFlowReturn on_jpeg(GstAppSink *sink, gpointer user)
                  send(fd, m.data, m.size, MSG_NOSIGNAL) >= 0 &&
                  send(fd, "\r\n", 2, MSG_NOSIGNAL) >= 0;
         pthread_mutex_unlock(&c->wlock);
+        atomic_fetch_add_explicit(&g_repro_bytes, hl + m.size + 2, memory_order_relaxed);
+        atomic_fetch_add_explicit(&g_repro_packets, 1, memory_order_relaxed);
         if (!ok) { close(fd); atomic_store(&c->client_fd, -1); fprintf(stderr, "mjpeg: client gone\n"); }
         gst_buffer_unmap(b, &m);
     }
@@ -121,9 +124,11 @@ int mjpeg_serve_run(const cam_profile_t *p)
     fprintf(stderr, "mjpeg: serving http://0.0.0.0:%d%s (%dx%d %dfps JPEG)\n", port, path, w, h, fps);
 
     GstBus *bus = gst_element_get_bus(pl);
-    GstMessage *msg = gst_bus_timed_pop_filtered(bus, GST_CLOCK_TIME_NONE,
-                                                 GST_MESSAGE_ERROR | GST_MESSAGE_EOS);
-    if (msg) gst_message_unref(msg);
+    while (!atomic_load_explicit(&g_repro_stop, memory_order_acquire)) {
+        GstMessage *msg = gst_bus_timed_pop_filtered(bus, 200 * GST_MSECOND,
+                                                     GST_MESSAGE_ERROR | GST_MESSAGE_EOS);
+        if (msg) { gst_message_unref(msg); break; }
+    }
     gst_object_unref(bus);
     gst_element_set_state(pl, GST_STATE_NULL);
     gst_object_unref(sink); gst_object_unref(pl);

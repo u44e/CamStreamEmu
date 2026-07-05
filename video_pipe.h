@@ -20,8 +20,12 @@
  * -1 if the container/codec is unsupported. Exposed for testing/--dump. */
 int  video_pipe_build(const cam_profile_t *p, char *out, unsigned n);
 
-/* Build + run the pipeline until SIGINT/error. 0 ok, -1 error. Blocks.
- * (For mpeg2-tts it wires an appsink tap and the tts_wrap sender.) */
+/* Build + run the pipeline until SIGINT/error/g_repro_stop. 0 ok, -1 error.
+ * Blocks. (For mpeg2-tts it wires an appsink tap and the tts_wrap sender.) */
 int  video_pipe_run(const cam_profile_t *p);
+
+/* Run an already-built GstElement* pipeline (takes ownership): attaches the
+ * byte probe to an element named "sink", plays until ERROR/EOS/g_repro_stop. */
+int  video_pipe_spin(void *pipeline);
 
 #endif /* CAMEMU_VIDEO_PIPE_H */

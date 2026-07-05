@@ -1,3 +1,5 @@
 camstreamemu
+profile_test
 *.o
 .DS_Store
+build-emu/

@@ -1,8 +1,19 @@
 /* rtsp_serve.c — see rtsp_serve.h. */
 #include "rtsp_serve.h"
 #include "video_pipe.h"
+#include "repro.h"
 #include <gst/gst.h>
 #include <gst/rtsp-server/rtsp-server.h>
+
+/* periodic idle: quit the main loop when the UI requests a stop */
+static gboolean stop_tick(gpointer loop)
+{
+    if (atomic_load_explicit(&g_repro_stop, memory_order_acquire)) {
+        g_main_loop_quit((GMainLoop *)loop);
+        return G_SOURCE_REMOVE;
+    }
+    return G_SOURCE_CONTINUE;
+}
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -108,6 +119,8 @@ int rtsp_serve_run(const cam_profile_t *p)
     }
     fprintf(stderr, "rtsp: serving rtsp://127.0.0.1:%d%s (%s %dx%d)\n",
             port, mount, p->codec, p->width, p->height);
+    g_timeout_add(200, stop_tick, loop);       /* let the UI stop us */
     g_main_loop_run(loop);
+    g_main_loop_unref(loop);
     return 0;
 }

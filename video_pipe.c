@@ -1,9 +1,62 @@
 /* video_pipe.c — see video_pipe.h. */
 #include "video_pipe.h"
+#include "repro.h"
 #include <gst/gst.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+/* shared reproduction stats/stop (declared extern in repro.h); defined here so
+ * both the CLI and the UI link them regardless of which entry points they use */
+_Atomic uint64_t g_repro_bytes   = 0;
+_Atomic uint32_t g_repro_packets = 0;
+_Atomic int      g_repro_stop    = 0;
+
+/* count each buffer leaving the udpsink for the UI's live stats */
+static GstPadProbeReturn byte_probe(GstPad *pad, GstPadProbeInfo *info, gpointer u)
+{
+    (void)pad; (void)u;
+    GstBuffer *b = GST_PAD_PROBE_INFO_BUFFER(info);
+    if (b) {
+        atomic_fetch_add_explicit(&g_repro_bytes, gst_buffer_get_size(b), memory_order_relaxed);
+        atomic_fetch_add_explicit(&g_repro_packets, 1, memory_order_relaxed);
+    }
+    return GST_PAD_PROBE_OK;
+}
+
+/* run a built pipeline until ERROR/EOS or g_repro_stop; attaches the byte probe
+ * to the element named "sink" if present. Shared by CLI and UI multicast paths. */
+int video_pipe_spin(void *pipeline_v)
+{
+    GstElement *pipeline = (GstElement *)pipeline_v;
+    GstElement *sink = gst_bin_get_by_name(GST_BIN(pipeline), "sink");
+    if (sink) {
+        GstPad *sp = gst_element_get_static_pad(sink, "sink");
+        if (sp) { gst_pad_add_probe(sp, GST_PAD_PROBE_TYPE_BUFFER, byte_probe, NULL, NULL);
+                  gst_object_unref(sp); }
+        gst_object_unref(sink);
+    }
+    gst_element_set_state(pipeline, GST_STATE_PLAYING);
+    GstBus *bus = gst_element_get_bus(pipeline);
+    int rc = 0;
+    while (!atomic_load_explicit(&g_repro_stop, memory_order_acquire)) {
+        GstMessage *msg = gst_bus_timed_pop_filtered(bus, 200 * GST_MSECOND,
+                                                     GST_MESSAGE_ERROR | GST_MESSAGE_EOS);
+        if (!msg) continue;
+        if (GST_MESSAGE_TYPE(msg) == GST_MESSAGE_ERROR) {
+            GError *e = NULL; gst_message_parse_error(msg, &e, NULL);
+            fprintf(stderr, "video: %s\n", e ? e->message : "error");
+            if (e) g_error_free(e);
+            rc = -1;
+        }
+        gst_message_unref(msg);
+        break;
+    }
+    gst_object_unref(bus);
+    gst_element_set_state(pipeline, GST_STATE_NULL);
+    gst_object_unref(pipeline);
+    return rc;
+}
 
 extern int tts_run(const cam_profile_t *p, const char *ts_pipeline_prefix);  /* tts_wrap.c */
 
@@ -86,7 +139,7 @@ int video_pipe_build(const cam_profile_t *p, char *out, unsigned n)
     if (is_jpeg) {                       /* Motion-JPEG over RTP (PT26) */
         return snprintf(out, n,
             "%s ! jpegenc ! rtpjpegpay pt=%d ssrc=%u "
-            "! udpsink host=%s port=%d auto-multicast=true",
+            "! udpsink name=sink host=%s port=%d auto-multicast=true",
             src, pt, ssrc, host, port) < (int)n ? 0 : -1;
     }
 
@@ -113,17 +166,17 @@ int video_pipe_build(const cam_profile_t *p, char *out, unsigned n)
     if (!strcmp(p->container, "mpeg2-ts")) {
         return snprintf(out, n,
             "%s ! %s ! mpegtsmux alignment=7 ! rtpmp2tpay pt=%d ssrc=%u "
-            "! udpsink host=%s port=%d auto-multicast=true",
+            "! udpsink name=sink host=%s port=%d auto-multicast=true",
             src, enc, pt, ssrc, host, port) < (int)n ? 0 : -1;
     }
     if (!strcmp(p->container, "mpeg2-es") || !strcmp(p->container, "raw-es")) {
         /* raw ES over RTP: H.264 via rtph264pay; MPEG-2 ES via rtpmpvpay */
         if (is_h264)
             return snprintf(out, n,
-                "%s ! %s ! rtph264pay pt=%d ssrc=%u ! udpsink host=%s port=%d auto-multicast=true",
+                "%s ! %s ! rtph264pay pt=%d ssrc=%u ! udpsink name=sink host=%s port=%d auto-multicast=true",
                 src, enc, pt, ssrc, host, port) < (int)n ? 0 : -1;
         return snprintf(out, n,
-            "%s ! %s ! rtpmpvpay pt=%d ssrc=%u ! udpsink host=%s port=%d auto-multicast=true",
+            "%s ! %s ! rtpmpvpay pt=%d ssrc=%u ! udpsink name=sink host=%s port=%d auto-multicast=true",
             src, enc, pt, ssrc, host, port) < (int)n ? 0 : -1;
     }
     return -1;
@@ -152,23 +205,7 @@ int video_pipe_run(const cam_profile_t *p)
         if (err) g_error_free(err);
         return -1;
     }
-    gst_element_set_state(pipeline, GST_STATE_PLAYING);
     fprintf(stderr, "video: streaming %s %dx%d to %s:%d (PT=%d)\n",
             p->codec, p->width, p->height, p->dst_ip, p->dst_port, p->payload_type);
-
-    GstBus *bus = gst_element_get_bus(pipeline);
-    GstMessage *msg = gst_bus_timed_pop_filtered(bus, GST_CLOCK_TIME_NONE,
-                                                 GST_MESSAGE_ERROR | GST_MESSAGE_EOS);
-    if (msg) {
-        if (GST_MESSAGE_TYPE(msg) == GST_MESSAGE_ERROR) {
-            GError *e = NULL; gst_message_parse_error(msg, &e, NULL);
-            fprintf(stderr, "video: %s\n", e ? e->message : "error");
-            if (e) g_error_free(e);
-        }
-        gst_message_unref(msg);
-    }
-    gst_object_unref(bus);
-    gst_element_set_state(pipeline, GST_STATE_NULL);
-    gst_object_unref(pipeline);
-    return 0;
+    return video_pipe_spin(pipeline);
 }

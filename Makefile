@@ -9,7 +9,7 @@ GST      = gstreamer-1.0 gstreamer-app-1.0 gstreamer-rtsp-server-1.0
 CFLAGS  += $(shell pkg-config --cflags $(GST))
 LDLIBS  += $(shell pkg-config --libs $(GST))
 
-SRC = main.c profile.c video_pipe.c tts_wrap.c rtsp_serve.c mjpeg_serve.c
+SRC = cli.c profile.c video_pipe.c tts_wrap.c rtsp_serve.c mjpeg_serve.c
 OBJ = $(SRC:.c=.o)
 
 camstreamemu: $(OBJ)
