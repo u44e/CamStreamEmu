@@ -25,7 +25,7 @@ cd ~/Projects/CamStreamEmu
 
 ## 2. ログイン → 提出（★アプリ dir で）/ login then publish
 ```bash
-PYTHONPATH="$HOME/CardputerZero-AppBuilder/scripts" python3 -m czdev login   # 初回のみ
+PYTHONPATH="$HOME/CardputerZero-AppBuilder/scripts" python3 -m czdev login
 cd ~/Projects/CamStreamEmu
 PYTHONPATH="$HOME/CardputerZero-AppBuilder/scripts" python3 -m czdev publish \
   --deb port/dist/camstreamemu_0.1.0_arm64.deb
