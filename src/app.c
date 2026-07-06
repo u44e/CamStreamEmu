@@ -17,6 +17,8 @@
 #include <string.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <time.h>
+#include <ctype.h>
 
 #include "ui_theme.h"
 #include "../profile.h"
@@ -48,13 +50,93 @@ static lv_obj_t *g_stat[6];
 
 void key_cb(lv_event_t *e);
 
-static void titlebar(const char *sub)
+/* title-bar top-right cluster (clock / LAN / battery), NetTerm style — matches
+ * PacketScope. CardputerZero is wired-Ethernet: a small rounded RJ45 plug icon
+ * (body + slot + clip) shows link status, not wifi. */
+static lv_obj_t *g_sb_time, *g_sb_batt, *g_sb_lan[3];
+static int       s_batt = -1, s_lan = -1;
+
+static int read_battery(void)
 {
-    ps_label(g_root, F14, COL_TITLE, 6, 3, "CamStreamEmu");
-    if (sub && *sub) {
-        lv_obj_t *r = ps_label(g_root, F12, COL_DIM, 0, 5, sub);
-        lv_obj_set_pos(r, LCD_W - (int)strlen(sub) * 7 - 6, 5);
+#if defined(APP_EMU)
+    FILE *fp = popen("pmset -g batt 2>/dev/null", "r");
+    if (!fp) return -1;
+    char line[256]; int pct = -1;
+    while (fgets(line, sizeof line, fp)) {
+        char *pc = strchr(line, '%');
+        if (pc) { char *s = pc; while (s > line && isdigit((unsigned char)s[-1])) s--; pct = atoi(s); break; }
     }
+    pclose(fp);
+    return pct;
+#else
+    const char *paths[] = { "/sys/class/power_supply/BAT0/capacity",
+                            "/sys/class/power_supply/BAT1/capacity",
+                            "/sys/class/power_supply/battery/capacity" };
+    for (int i = 0; i < 3; i++) {
+        FILE *f = fopen(paths[i], "r");
+        if (f) { int v = -1, ok = fscanf(f, "%d", &v); fclose(f); if (ok == 1) return v; }
+    }
+    return -1;
+#endif
+}
+
+static int read_lan(void)   /* 1 up, 0 down, -1 unknown — wired Ethernet */
+{
+#if defined(APP_EMU)
+    return 1;
+#else
+    const char *ifs[] = { "eth0", "end0", "enu1u1", "usb0", "eth1" };
+    for (int i = 0; i < 5; i++) {
+        char p[64]; snprintf(p, sizeof p, "/sys/class/net/%s/carrier", ifs[i]);
+        FILE *f = fopen(p, "r");
+        if (f) { int v = -1, ok = fscanf(f, "%d", &v); fclose(f); if (ok == 1) return v ? 1 : 0; }
+    }
+    return -1;
+#endif
+}
+
+static void statuscluster_set(void)
+{
+    if (!g_sb_time) return;
+    time_t t = time(NULL); struct tm m; localtime_r(&t, &m);
+    char tb[8]; snprintf(tb, sizeof tb, "%02d:%02d", m.tm_hour, m.tm_min);
+    lv_label_set_text(g_sb_time, tb);
+
+    static time_t last = 0;
+    if (last == 0 || t - last >= 20) { last = t; s_batt = read_battery(); s_lan = read_lan(); }
+
+    char bb[16];
+    if (s_batt >= 0) snprintf(bb, sizeof bb, "%d%%", s_batt);
+    else             snprintf(bb, sizeof bb, "--%%");
+    lv_label_set_text(g_sb_batt, bb);
+    lv_obj_set_style_text_color(g_sb_batt, lv_color_hex(s_batt >= 0 && s_batt < 15 ? COL_RED : COL_TEXT), 0);
+
+    uint32_t lc = s_lan == 1 ? COL_GREEN : s_lan == 0 ? COL_RED : COL_DIM;
+    lv_obj_set_style_bg_color(g_sb_lan[0], lv_color_hex(lc), 0);
+    lv_obj_set_style_bg_color(g_sb_lan[2], lv_color_hex(lc), 0);
+
+    /* right-align the cluster: [clock]  [plug]  [battery%] */
+    int rx = LCD_W - 6;
+    int bx = rx - (int)strlen(bb) * 8;
+    lv_obj_set_pos(g_sb_batt, bx, 4);
+    int lx = bx - 9 - 12, ly = 4;
+    lv_obj_set_pos(g_sb_lan[2], lx + 4, ly);      lv_obj_set_size(g_sb_lan[2], 4, 2);   /* clip */
+    lv_obj_set_pos(g_sb_lan[0], lx, ly + 2);      lv_obj_set_size(g_sb_lan[0], 12, 10); /* body */
+    lv_obj_set_pos(g_sb_lan[1], lx + 2, ly + 8);  lv_obj_set_size(g_sb_lan[1], 8, 4);   /* pin slot */
+    lv_obj_set_pos(g_sb_time, lx - 7 - 30, 4);                                          /* clock */
+}
+
+/* NetTerm-style title band: plain (no fill), font-14 title on the left, a
+ * clock / LAN / battery cluster on the right. */
+static void titlebar(const char *title)
+{
+    ps_label(g_root, F14, COL_TITLE, 8, 3, title && *title ? title : "CamStreamEmu");
+    g_sb_time = ps_label(g_root, F12, COL_DIM, 0, 4, "");
+    for (int i = 0; i < 3; i++) g_sb_lan[i] = ps_rect(g_root, COL_GREEN, 0, 0, 4, 4);   /* RJ45 plug */
+    lv_obj_set_style_radius(g_sb_lan[0], 2, 0);
+    lv_obj_set_style_bg_color(g_sb_lan[1], lv_color_hex(COL_BG), 0);                    /* slot = bg */
+    g_sb_batt = ps_label(g_root, F12, COL_TEXT, 0, 4, "");
+    statuscluster_set();
     ps_rect(g_root, COL_CYAN, 0, TITLE_H - 1, LCD_W, 1);
 }
 
@@ -72,7 +154,7 @@ static void attach_capture(void)
     lv_group_focus_obj(g_cap);
 }
 
-static void clear_root(void) { lv_obj_clean(g_root); attach_capture(); }
+static void clear_root(void) { lv_obj_clean(g_root); g_sb_time = NULL; attach_capture(); }
 
 /* ---- profile list ---- */
 static void scan(const char *dir)
@@ -103,8 +185,7 @@ static void show_list(void)
 {
     g_scr = SCR_LIST;
     clear_root();
-    char sb[32]; snprintf(sb, sizeof sb, "v%s", CSE_VERSION);
-    titlebar(sb);
+    titlebar("CamStreamEmu");
     ps_label(g_root, F12, COL_CYAN, 6, TITLE_H, "camera profiles  (Enter: reproduce)");
     int top = g_sel - 4; if (top < 0) top = 0;
     for (int i = 0; i < BODY_ROWS && top + i < g_np; i++) {
@@ -114,7 +195,7 @@ static void show_list(void)
         ps_label(g_root, F12, idx == g_sel ? COL_CYAN : COL_TEXT, 6, y, l);
     }
     ps_rect(g_root, COL_SBAR, 0, LCD_H - SBAR_H, LCD_W, SBAR_H);
-    char sbb[48]; snprintf(sbb, sizeof sbb, "%d profiles   Up/Dn  Enter", g_np);
+    char sbb[48]; snprintf(sbb, sizeof sbb, "v%s  %d profiles  Up/Dn Enter", CSE_VERSION, g_np);
     ps_label(g_root, F12, COL_DIM, 4, LCD_H - SBAR_H + 2, sbb);
     if (g_np == 0)
         ps_label(g_root, F12, COL_AMBER, 6, TITLE_H + 20, "No .json profiles found.");
@@ -179,7 +260,7 @@ void key_cb(lv_event_t *e)
     }
 }
 
-static void on_tick(lv_timer_t *t) { (void)t; run_tick(); }
+static void on_tick(lv_timer_t *t) { (void)t; statuscluster_set(); run_tick(); }
 
 CZ_APP_EXPORT void app_main(lv_obj_t *parent)
 {

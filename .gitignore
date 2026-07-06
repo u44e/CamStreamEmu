@@ -3,3 +3,6 @@ profile_test
 *.o
 .DS_Store
 build-emu/
+port/.lvgl/
+port/dist/
+port/lv_conf.h

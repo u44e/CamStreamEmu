@@ -1,0 +1,90 @@
+{
+  "name": "CamStreamEmu",
+  "package": "camstreamemu",
+  "package_name": "camstreamemu",
+  "app_name": "CamStreamEmu",
+  "version": "0.1.0",
+  "description": "Reproduce a captured network camera's video stream on CardputerZero — reads a PacketScope camera-profile JSON and re-emits the same format (multicast RTP, RTSP, or HTTP MJPEG) from the built-in camera via GStreamer hardware encoding.",
+  "maintainer": "u44e <u44e@users.noreply.github.com>",
+  "homepage": "https://github.com/u44e/CamStreamEmu",
+  "license": "MIT",
+  "store": {
+    "uuid": "a6531fbe-d663-410b-a576-8132c6f029ca",
+    "title": "CamStreamEmu",
+    "summary": "Reproduce a captured camera's video stream (multicast / RTSP / HTTP-MJPEG) from the built-in camera.",
+    "description": "CamStreamEmu regenerates the video stream of a real network camera from a profile captured by PacketScope. Pick a camera-profile JSON on the 320x170 screen and it encodes the built-in camera to that exact format via GStreamer (hardware H.264 on the Pi) and delivers it the same way the real camera did — multicast RTP (H.264/MPEG2-TS, MPEG-2, MLIT MPEG2-TTS/PT103, RTP-JPEG), an RTSP server, or an HTTP Motion-JPEG server — while showing live delivery mode / destination / packet & byte counters. Video-only; there is no pan/tilt/zoom camera control. Pairs with PacketScope (observe -> reproduce round-trip).",
+    "locales": {
+      "en": {
+        "title": "CamStreamEmu",
+        "summary": "Reproduce a captured camera's video stream (multicast / RTSP / HTTP-MJPEG) from the built-in camera.",
+        "description": "CamStreamEmu regenerates a real network camera's video stream from a profile captured by PacketScope. Pick a camera-profile JSON on the 320x170 screen; it encodes the built-in camera to that exact format via GStreamer (hardware H.264 on the Pi) and delivers it the way the real camera did: multicast RTP (H.264/MPEG2-TS, MPEG-2, MLIT MPEG2-TTS/PT103, RTP-JPEG), an RTSP server, or an HTTP Motion-JPEG server — with live delivery-mode / destination / packet & byte counters. Video only (no PTZF camera control). Pairs with PacketScope as the observe->reproduce round-trip."
+      },
+      "ja": {
+        "title": "カムストリームエミュ",
+        "summary": "取得したカメラの映像ストリームを内蔵カメラから再現(マルチキャスト/RTSP/HTTP-MJPEG)。",
+        "description": "CamStreamEmu は、PacketScope で取得したプロファイルから実ネットワークカメラの映像ストリームを再現します。320x170 の画面でカメラプロファイルJSONを選ぶと、内蔵カメラを GStreamer(Piではハードウェア H.264)でその形式に符号化し、実カメラと同じ方式で配信します: マルチキャストRTP(H.264/MPEG2-TS・MPEG-2・国交省MPEG2-TTS/PT103・RTP-JPEG)、RTSPサーバ、HTTP Motion-JPEG サーバ。配信モード・宛先・パケット/バイト数をライブ表示します。映像のみ(PTZFカメラ制御なし)。PacketScope と対で「観測→再現」の往復を成します。"
+      }
+    },
+    "categories": ["Multimedia", "Video", "Utilities"],
+    "author": { "github": "u44e", "display_name": "u44e", "website": "https://github.com/u44e" },
+    "license": "MIT",
+    "commercial_use": true,
+    "source": { "openness": "open-source", "repository": "https://github.com/u44e/CamStreamEmu" },
+    "source_repo": "https://github.com/u44e/CamStreamEmu",
+    "icon": "share/images/camstreamemu.png",
+    "screenshots": [
+      "store/screenshots/01-list-320x170.png",
+      "store/screenshots/02-reproduce-320x170.png"
+    ],
+    "download": { "package": "camstreamemu", "url": "", "md5": "" },
+    "external_hardware": false,
+    "service": false,
+    "hdmi_output": false,
+    "permissions": {
+      "keyboard_input": true,
+      "network": true,
+      "filesystem": "full",
+      "external_hardware": false,
+      "hdmi_output": false,
+      "background_service": false,
+      "audio_output": false,
+      "microphone": false,
+      "camera": true,
+      "sensors": false,
+      "gps": false,
+      "device_id": false
+    },
+    "privacy": {
+      "collects_personal_data": false,
+      "data_leaves_device": "yes (by design) — when reproducing, the built-in camera's encoded video is streamed over the local network (multicast RTP / RTSP / HTTP-MJPEG) exactly as the profile specifies. It only streams while the user starts a reproduction; no other data is collected or transmitted.",
+      "data_retention": "camera-profile JSON files stay on local storage; no recordings are kept; no telemetry",
+      "third_party_sharing": false
+    },
+    "open_source": {
+      "app_license": "MIT",
+      "notices": "THIRD_PARTY_NOTICES.md",
+      "components": [
+        "LVGL 9.5 (MIT)",
+        "FreeType (FTL)",
+        "GStreamer 1.0 + app + rtsp-server (LGPLv2.1)",
+        "GStreamer plugins base/good/bad + gst-libav (LGPLv2.1) — runtime deps"
+      ],
+      "gpl_note": "No GPL component is in the distributed path: the device encoder is hardware v4l2h264enc and MPEG-2 uses LGPL gst-libav. The GPL x264 encoder is a macOS-dev fallback only and is NOT a package dependency (Depends: base/good/bad/libav, not -ugly). 実機経路にGPLコンポーネントは含みません。"
+    },
+    "risk_flags": [
+      "streams the built-in camera's video over the local network (multicast RTP / RTSP server / HTTP-MJPEG) while reproducing — broadcasts on the LAN by design / 再現中は内蔵カメラ映像をLANへ配信します",
+      "uses the built-in camera as the video source (GStreamer libcamera/v4l2) / 内蔵カメラを映像ソースに使用",
+      "runtime-depends on GStreamer (OSS, LGPL/permissive; see THIRD_PARTY_NOTICES.md) — no GPL encoder in the device path"
+    ],
+    "review": {
+      "status": "pending",
+      "hardware_verified": false,
+      "known_limitations": [
+        "実機未検証 / Not hardware-verified: 物理 M5CardputerZero(Raspberry Pi CM0)では未検証です。デスクトップ(Mac)のエミュレータ＋GStreamerでUIと全配信モードを確認し、arm64コンテナで .deb をビルド・関門確認していますが、実機の内蔵カメラ(libcamera)・v4l2ハードウェアH.264エンコード・fbdev/LCD・キーマップは未確認です(実機は2026年11月予定)。 — NOT verified on physical M5CardputerZero (Pi CM0). UI + all delivery modes verified on a desktop emulator with GStreamer, and the .deb builds/gate-checks in an arm64 container, but the on-device camera (libcamera), v4l2 HW H.264 encode, fbdev/LCD and keymap are unconfirmed (device expected Nov 2026).",
+        "サンプル不足 / Limited sample coverage: 同梱のカメラプロファイルは少数(合成＋匿名化した実キャプチャ由来)で、任意ベンダの全形式は網羅していません。 — Only a small set of bundled camera profiles (synthetic + anonymized real-derived); not an exhaustive vendor coverage.",
+        "OSS実行時依存 / OSS runtime dependency: GStreamer 一式(LGPL)に依存します。GPLのx264は開発時フォールバックのみで配布依存に含みません(THIRD_PARTY_NOTICES.md)。 — Depends on GStreamer (LGPL) at runtime; GPL x264 is a dev-only fallback, not a package dependency (see THIRD_PARTY_NOTICES.md)."
+      ],
+      "notes": "【日本語】UIとMLIT TTS(192)/PT103・マルチキャストH.264/MPEG-2・RTSP・HTTP-MJPEG の全配信モードをデスクトップ(Mac)のエミュレータ＋GStreamerで送受検証済み(tests/verify.sh でデコード解像度/構造一致を自動確認、ALL PASS)。.deb は arm64 Debian コンテナでビルドし、ヘッドレス起動マーカーとSIGTERMクリーン終了・パッケージ関門を確認。実機(Pi CM0)は未検証。ライセンス: 本体MIT、依存はLGPL/MIT/FTL(動的)、実機エンコードはHW v4l2＋LGPL gst-libavでGPL非依存。 / 【English】UI and all delivery modes (MLIT TTS(192)/PT103, multicast H.264/MPEG-2, RTSP, HTTP-MJPEG) verified send+receive on a desktop emulator with GStreamer (tests/verify.sh auto-checks decoded resolution/structure — ALL PASS). The .deb builds in an arm64 Debian container with a headless startup marker, clean SIGTERM exit and passing package gates. NOT verified on physical Pi CM0 hardware. License: app is MIT, deps are LGPL/MIT/FTL (dynamic), device encoding uses HW v4l2 + LGPL gst-libav with no GPL dependency."
+    }
+  }
+}
