@@ -33,5 +33,5 @@ CamStreamEmu に渡す例。01–06 は PacketScope が実 pcap から書き出�
 | real-h264-es  | H.264 raw-ES PT99 640×480 |
 | real-mpeg2-a  | MPEG-2 raw-ES PT96 720×480 |
 | real-mpeg2-b  | MPEG-2 raw-ES PT96 720×480 |
-| real-h264-annexb | H.264 生Annex-B over RTP PT105 1920×1080 (Sony/VB340型) |
+| real-sony-h264 | Sony(SNC-VB340型) H.264 生Annex-B over RTP+Sony SEI PT105 1920×1080 |
 | real-rtsp-h264-4k | H.264 4K 3840×2160 RTSP(Axis, SPSはSDP sprop) PT96 |
