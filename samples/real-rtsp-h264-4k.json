@@ -1,0 +1,38 @@
+{
+  "camera_profile": {
+    "version": 1,
+    "generated_by": "PacketScope 0.1.0",
+    "source_capture": "(anonymized)",
+    "control": {
+      "protocol": "rtsp",
+      "url": "rtsp://192.0.2.30:554/axis-media/media.amp",
+      "methods": "OPTIONS,DESCRIBE,SDP,SETUP,PLAY,JOIN,GET_PARAMETER,TEARDOWN,LEA",
+      "transport": "RTP/AVP/UDP;multicast",
+      "multicast_group": "239.255.1.6",
+      "media_port": 0,
+      "server_port": 554,
+      "sdp": "v=0\no=- 16435607069528964855 1 IN IP4 192.0.2.30\ns=Session streamed with GStreamer\ni=rtsp-server\nt=0 0\na=tool:GStreamer\na=type:broadcast\na=control:*\na=range:npt=now-607.407\nm=video 0 RTP/AVP 96\nc=IN IP4 0.0.0.0\nb=AS:11114\na=rtpmap:96 H264/90000\na=framerate:29.970029970029969\na=fmtp:96 packetization-mode=1;sprop-parameter-sets=Z2QAM6zZQDwAQ+m4CAgKAAAH0gAB1MAeMGMs,aOvhksiw;profile-level-id=640033;level-asymmetry-allowed=1\na=control:stream=0\na=ts-refclk:local\na=mediaclk:sender\na=ssrc:1086"
+    },
+    "video": {
+      "transport": "rtp",
+      "payload_type": 96,
+      "ssrc": "0x10000007",
+      "clock_hz": 90000,
+      "container": "raw-es",
+      "video_pid": -1,
+      "codec": {
+        "name": "H.264",
+        "profile": "High",
+        "level": "5.1",
+        "width": 3840,
+        "height": 2160,
+        "fps": 29.97,
+        "gop": 0
+      },
+      "bitrate_kbps": 12474,
+      "src_ip": "192.0.2.30",
+      "dst_ip": "239.255.1.6",
+      "dst_port": 5000
+    }
+  }
+}
