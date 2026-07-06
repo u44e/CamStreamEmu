@@ -1,0 +1,40 @@
+{
+  "camera_profile": {
+    "version": 1,
+    "generated_by": "PacketScope 0.1.0",
+    "source_capture": "(real CCTV capture, anonymized)",
+    "control": {
+      "protocol": "multicast",
+      "methods": "JOIN",
+      "multicast_group": "239.255.1.2",
+      "media_port": -1,
+      "server_port": -1
+    },
+    "video": {
+      "transport": "rtp",
+      "payload_type": 99,
+      "ssrc": "0x10000002",
+      "clock_hz": 90000,
+      "container": "raw-es",
+      "video_pid": -1,
+      "codec": {
+        "name": "H.264",
+        "profile": "Main",
+        "level": "3.0",
+        "width": 640,
+        "height": 480,
+        "fps": 14.985,
+        "gop": 15,
+        "aud": false,
+        "sei": true,
+        "inband_sps": true,
+        "sps": "Z01AHpZVBQHtCAAAH0gAA6mHIQA9CAALcbdOMBQ=",
+        "pps": "aM4GSSA="
+      },
+      "bitrate_kbps": 518,
+      "src_ip": "192.0.2.11",
+      "dst_ip": "239.255.1.2",
+      "dst_port": 5000
+    }
+  }
+}

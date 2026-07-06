@@ -20,3 +20,16 @@ CamStreamEmu に渡す例。01–06 は PacketScope が実 pcap から書き出�
 ```
 
 01,05 は SPS/PPS(base64)・AUD/SEI・SDP まで含み、byte-exact 再現の材料になる。
+
+## 実キャプチャ由来 (匿名化)
+
+`real-*.json` は実運用CCTVのキャプチャを PacketScope で解析して得た本物の形式
+プロファイル(**アドレス・SSRC・出所は匿名化済み**、映像本体は含まない)。CamStreamEmu
+で全数 再現・デコード一致を確認済み。実在カメラで往復(観測→再現)が成立する実証。
+
+| ファイル | 形式 |
+|---|---|
+| real-h264-tts | H.264 MPEG2-TTS(192) PT103 640×480 |
+| real-h264-es  | H.264 raw-ES PT99 640×480 |
+| real-mpeg2-a  | MPEG-2 raw-ES PT96 720×480 |
+| real-mpeg2-b  | MPEG-2 raw-ES PT96 720×480 |

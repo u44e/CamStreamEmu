@@ -1,0 +1,43 @@
+{
+  "camera_profile": {
+    "version": 1,
+    "generated_by": "PacketScope 0.1.0",
+    "source_capture": "(real CCTV capture, anonymized)",
+    "control": {
+      "protocol": "http-mjpeg",
+      "url": "/NexcoCctv/AjaxGetDeterrenceData.aspx?send_time=16:30:26%20UTC+0900:125",
+      "methods": "GET,JOIN",
+      "multicast_group": "239.255.1.1",
+      "media_port": -1,
+      "server_port": 13000
+    },
+    "video": {
+      "transport": "rtp",
+      "payload_type": 103,
+      "ssrc": "0x10000001",
+      "clock_hz": 90000,
+      "container": "mpeg2-tts",
+      "tts_unit": 192,
+      "video_pid": 4113,
+      "codec": {
+        "name": "H.264",
+        "profile": "High",
+        "level": "4.0",
+        "width": 640,
+        "height": 480,
+        "fps": 29.97,
+        "gop": 30,
+        "aud": true,
+        "sei": true,
+        "inband_sps": true,
+        "sps": "Z2QAKK3FTYY4jFRWKmwxxGKisVNhjiMVFRBIjEc2SSIJEYjmySRBIjEc2SQ7AoD3/AahAAALuwACvyBowAD80A==",
+        "pps": "aN48MA=="
+      },
+      "bitrate_kbps": 1362,
+      "cctv_profile_conformant": true,
+      "src_ip": "192.0.2.10",
+      "dst_ip": "239.255.1.1",
+      "dst_port": 37004
+    }
+  }
+}
