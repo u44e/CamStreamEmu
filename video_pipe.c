@@ -1,5 +1,6 @@
 /* video_pipe.c — see video_pipe.h. */
 #include "video_pipe.h"
+#include "h264_inject.h"
 #include "repro.h"
 #include <gst/gst.h>
 #include <stdio.h>
@@ -115,11 +116,11 @@ static int h264_enc(const cam_profile_t *p, char *out, unsigned n)
     if (!strcmp(enc, "v4l2"))
         return snprintf(out, n,
             "v4l2h264enc extra-controls=\"controls,video_bitrate=%ld,h264_i_frame_period=%d\" "
-            "! video/x-h264,level=(string)4 ! h264parse config-interval=1",
+            "! video/x-h264,level=(string)4 ! h264parse name=hparse config-interval=1",
             kbps * 1000, gop);
     return snprintf(out, n,
         "x264enc bitrate=%ld key-int-max=%d speed-preset=veryfast tune=zerolatency "
-        "! h264parse config-interval=1", kbps, gop);
+        "! h264parse name=hparse config-interval=1", kbps, gop);
 }
 
 int video_pipe_build(const cam_profile_t *p, char *out, unsigned n)
@@ -205,6 +206,7 @@ int video_pipe_run(const cam_profile_t *p)
         if (err) g_error_free(err);
         return -1;
     }
+    h264_inject_attach(pipeline, p);          /* byte-exact SPS/PPS if the profile has them */
     fprintf(stderr, "video: streaming %s %dx%d to %s:%d (PT=%d)\n",
             p->codec, p->width, p->height, p->dst_ip, p->dst_port, p->payload_type);
     return video_pipe_spin(pipeline);
