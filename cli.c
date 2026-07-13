@@ -16,7 +16,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define CAMSTREAMEMU_VERSION "0.1.0"
+#define CAMSTREAMEMU_VERSION "0.1.1"
 
 int main(int argc, char **argv)
 {

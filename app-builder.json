@@ -3,7 +3,7 @@
   "package": "camstreamemu",
   "package_name": "camstreamemu",
   "app_name": "CamStreamEmu",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Reproduce a captured network camera's video stream on CardputerZero — reads a PacketScope camera-profile JSON and re-emits the same format (multicast RTP, RTSP, or HTTP MJPEG) from the built-in camera via GStreamer hardware encoding.",
   "maintainer": "u44e <u44e@users.noreply.github.com>",
   "homepage": "https://github.com/u44e/CamStreamEmu",

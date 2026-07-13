@@ -24,7 +24,7 @@
 #include "../profile.h"
 #include "../repro.h"
 
-#define CSE_VERSION "0.1.0"
+#define CSE_VERSION "0.1.1"
 
 #if defined(APP_EMU)
 #define SAMPLE_DIR "samples"

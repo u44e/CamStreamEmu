@@ -8,7 +8,7 @@
 # runtime, GStreamer plugins base/good/bad/libav (LGPL; gst-libav wraps FFmpeg
 # and x264 which are GPL). See THIRD_PARTY_NOTICES.md.
 cmake_minimum_required(VERSION 3.20)
-project(camstreamemu VERSION 0.1.0 LANGUAGES C)
+project(camstreamemu VERSION 0.1.1 LANGUAGES C)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
