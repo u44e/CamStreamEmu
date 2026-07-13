@@ -41,6 +41,7 @@ add_executable(camstreamemu
     "${REPO_ROOT}/tts_wrap.c"
     "${REPO_ROOT}/rtsp_serve.c"
     "${REPO_ROOT}/mjpeg_serve.c"
+    "${REPO_ROOT}/h264_inject.c"
 )
 target_include_directories(camstreamemu PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}" "${REPO_ROOT}/emu"
