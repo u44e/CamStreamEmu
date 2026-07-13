@@ -1,5 +1,6 @@
 /* rtsp_serve.c — see rtsp_serve.h. */
 #include "rtsp_serve.h"
+#include "h264_inject.h"
 #include "video_pipe.h"
 #include "repro.h"
 #include <gst/gst.h>
@@ -54,11 +55,11 @@ static int rtsp_launch(const cam_profile_t *p, char *out, unsigned n)
     char encbuf[256];
     if (!strcmp(enc, "v4l2"))
         snprintf(encbuf, sizeof encbuf,
-                 "v4l2h264enc extra-controls=\"controls,video_bitrate=%ld,h264_i_frame_period=%d\" ! h264parse config-interval=1",
+                 "v4l2h264enc extra-controls=\"controls,video_bitrate=%ld,h264_i_frame_period=%d\" ! h264parse name=hparse config-interval=1",
                  kbps * 1000, gop);
     else
         snprintf(encbuf, sizeof encbuf,
-                 "x264enc bitrate=%ld key-int-max=%d speed-preset=veryfast tune=zerolatency ! h264parse config-interval=1",
+                 "x264enc bitrate=%ld key-int-max=%d speed-preset=veryfast tune=zerolatency ! h264parse name=hparse config-interval=1",
                  kbps, gop);
     encseg = encbuf;
 
@@ -68,6 +69,15 @@ static int rtsp_launch(const cam_profile_t *p, char *out, unsigned n)
         "! rtph264pay name=pay0 pt=%d )",
         src_el, w, h, fn, encseg, pt);
     return (wr > 0 && wr < (int)n) ? 0 : -1;
+}
+
+/* byte-exact SPS/PPS: attach the injector to each freshly-configured media */
+static const cam_profile_t *g_rtsp_p;
+static void on_media_configure(GstRTSPMediaFactory *f, GstRTSPMedia *media, gpointer u)
+{
+    (void)f; (void)u;
+    GstElement *el = gst_rtsp_media_get_element(media);
+    if (el) { h264_inject_attach(el, g_rtsp_p); gst_object_unref(el); }
 }
 
 int rtsp_serve_run(const cam_profile_t *p)
@@ -89,6 +99,8 @@ int rtsp_serve_run(const cam_profile_t *p)
     GstRTSPMediaFactory *factory = gst_rtsp_media_factory_new();
     gst_rtsp_media_factory_set_launch(factory, launch);
     gst_rtsp_media_factory_set_shared(factory, TRUE);
+    g_rtsp_p = p;                             /* byte-exact SPS/PPS on this stream */
+    g_signal_connect(factory, "media-configure", G_CALLBACK(on_media_configure), NULL);
     /* multicast if the profile's transport asked for it */
     if (p->mcast_group[0] || strstr(p->transport, "multicast")) {
         gst_rtsp_media_factory_set_protocols(factory, GST_RTSP_LOWER_TRANS_UDP_MCAST |
