@@ -137,9 +137,11 @@ int video_pipe_build(const cam_profile_t *p, char *out, unsigned n)
     int is_jpeg = !strcmp(p->codec, "JPEG") || !strcmp(p->container, "rtp-jpeg");
     int is_mp2v = !strcmp(p->codec, "MPEG-2");
 
-    if (is_jpeg) {                       /* Motion-JPEG over RTP (PT26) */
+    if (is_jpeg) {                       /* Motion-JPEG over RTP (PT26, RFC2435) */
+        /* rtpjpegpay only accepts 4:2:0/4:2:2 with the expected component ids;
+         * force I420 so jpegenc's SOF is valid ("Invalid component" otherwise). */
         return snprintf(out, n,
-            "%s ! jpegenc ! rtpjpegpay pt=%d ssrc=%u "
+            "%s ! video/x-raw,format=I420 ! jpegenc ! rtpjpegpay pt=%d ssrc=%u "
             "! udpsink name=sink host=%s port=%d auto-multicast=true",
             src, pt, ssrc, host, port) < (int)n ? 0 : -1;
     }

@@ -75,6 +75,23 @@ check_mc "$APP/samples/02-mpeg2-ts.json"      MP2T "rtpmp2tdepay ! tsdemux ! mpe
 check_mc "$APP/samples/03-h264-rtp-es.json"   H264 "rtph264depay ! h264parse ! avdec_h264"
 check_mc "$APP/samples/06-mpeg2-es.json"      MPV  "rtpmpvdepay ! mpegvideoparse ! avdec_mpeg2video"
 
+# RTP-JPEG (PT26): the fixture profile carries no resolution, so verify that
+# JPEG frames flow and decode (any non-zero decoded size) rather than a match.
+check_jpeg() {
+    local prof=$1 tmp got
+    PORT=$((PORT + 2)); pkill -9 camstreamemu 2>/dev/null; sleep 0.2
+    tmp=$(mktemp); retarget "$prof" $PORT "" "$tmp"
+    eval "timeout 6 gst-launch-1.0 -v udpsrc port=$PORT \
+        caps=\"application/x-rtp,media=video,clock-rate=90000,encoding-name=JPEG,payload=26\" \
+        ! rtpjpegdepay ! jpegdec ! video/x-raw ! fakesink >/tmp/rx.$$ 2>&1 &"
+    local rx=$!; sleep 0.5; timeout 4 "$CLI" --multicast "$tmp" >/dev/null 2>&1
+    sleep 0.3; kill $rx 2>/dev/null; wait $rx 2>/dev/null; rm -f "$tmp"
+    got=$(decoded_dims /tmp/rx.$$); rm -f /tmp/rx.$$
+    if [ -n "$got" ] && [ "$got" != "0x0" ]; then printf "  PASS  %-22s decoded %s\n" "$(basename $prof)" "$got"
+    else printf "  FAIL  %-22s got=%s\n" "$(basename $prof)" "${got:-none}"; fail=1; fi
+}
+check_jpeg "$APP/samples/04-rtp-jpeg.json"
+
 # RTSP: retarget to 8554 (non-privileged), rtspsrc pulls + decodes
 echo "== RTSP (rtspsrc round-trip) =="
 tmp=$(mktemp); retarget "$APP/samples/07-rtsp-h264.json" 0 8554 "$tmp"
