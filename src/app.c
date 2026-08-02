@@ -24,6 +24,12 @@
 #include "../profile.h"
 #include "../repro.h"
 
+#define CZ_HELP_BG  COL_BG    /* CP0キー仕様ヘルパー(f/z/x/c=矢印, 'h'=fn+H=ヘルプ) */
+#define CZ_HELP_FG  COL_TEXT
+#define CZ_HELP_ACC COL_CYAN
+#define CZ_HELP_DIM COL_DIM
+#include "cz_keys.h"
+
 #define CSE_VERSION "0.1.1"
 
 #if defined(APP_EMU)
@@ -248,9 +254,22 @@ static void stop_and_back(void)
     show_list();
 }
 
+static const char *const HELP_LINES[] = {
+    "Up/Down (F/X)   select profile",
+    "Enter           reproduce camera",
+    "S / ESC         stop (run screen)",
+    "F/Z/X/C         Up/Left/Down/Right (no fn)",
+};
+
 void key_cb(lv_event_t *e)
 {
-    uint32_t k = lv_event_get_key(e);
+    uint32_t k = cz_keynorm(lv_event_get_key(e), 0);   /* テキスト入力モード無し */
+    if (cz_help_key(k)) return;
+    if (k == CZ_KEY_HELP) {
+        cz_help_toggle(g_root, "CamStreamEmu keys", HELP_LINES,
+                       (int)(sizeof HELP_LINES / sizeof *HELP_LINES), F12);
+        return;
+    }
     if (g_scr == SCR_LIST) {
         if (k == LV_KEY_UP && g_sel > 0) { g_sel--; show_list(); }
         else if (k == LV_KEY_DOWN && g_sel < g_np - 1) { g_sel++; show_list(); }
@@ -261,6 +280,17 @@ void key_cb(lv_event_t *e)
 }
 
 static void on_tick(lv_timer_t *t) { (void)t; statuscluster_set(); run_tick(); }
+
+#if defined(PS_TEST_HOOKS)
+/* AUTO_KEYS=文字列: 1文字ずつ捕捉オブジェクトへ流す(キー挙動の EMU_SHOT 検証用) */
+static const char *g_autokeys;
+static void autokey_tick(lv_timer_t *t)
+{
+    if (!g_autokeys || !*g_autokeys) { lv_timer_delete(t); return; }
+    uint32_t k = (uint32_t)(unsigned char)*g_autokeys++;
+    if (g_cap) lv_obj_send_event(g_cap, LV_EVENT_KEY, &k);
+}
+#endif
 
 CZ_APP_EXPORT void app_main(lv_obj_t *parent)
 {
@@ -282,6 +312,8 @@ CZ_APP_EXPORT void app_main(lv_obj_t *parent)
     const char *scr = getenv("AUTO_SCREEN");
     if (scr && !strcmp(scr, "run")) { start_selected(); }
     else show_list();
+    g_autokeys = getenv("AUTO_KEYS");
+    if (g_autokeys && *g_autokeys) lv_timer_create(autokey_tick, 300, NULL);
 #else
     show_list();
 #endif

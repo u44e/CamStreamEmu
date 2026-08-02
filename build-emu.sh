@@ -27,7 +27,7 @@ clang -dynamiclib -O2 -std=gnu11 -arch arm64 -fPIC \
   -I "$EMU" -I "$EMU/lib" -I "$EMU/lib/lvgl" -I "$APP/emu" -I "$APP/src" -I "$APP" \
   $(pkg-config --cflags sdl2) \
   "$APP/src/app.c" "$APP/profile.c" "$APP/repro.c" "$APP/video_pipe.c" \
-  "$APP/tts_wrap.c" "$APP/rtsp_serve.c" "$APP/mjpeg_serve.c" \
+  "$APP/tts_wrap.c" "$APP/rtsp_serve.c" "$APP/mjpeg_serve.c" "$APP/h264_inject.c" \
   "$EMU/lib/lvgl/src/drivers/sdl/lv_sdl_keyboard.c" \
   $GSTFLAGS \
   -undefined dynamic_lookup -lpthread -lm \
